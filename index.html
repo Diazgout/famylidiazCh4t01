@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>chatDi4z - Mensajería con IA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+
+        audio::-webkit-media-controls-enclosure {
+            background-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-600 to-purple-700 min-h-screen">
+
+    <!-- App Container -->
+    <div id="app" class="flex items-center justify-center min-h-screen p-0 md:p-4">
+        <!-- Auth Screen (Default) -->
+        <div id="auth-screen" class="w-full max-w-md p-8 bg-white rounded-2xl shadow-2xl animate-fade-in">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600">
+                    <i data-lucide="message-square" size="32"></i>
+                </div>
+                <h1 class="text-3xl font-black text-gray-800 tracking-tight">chatDi4z</h1>
+                <p id="auth-subtitle" class="text-gray-500 text-sm mt-1">Tu espacio privado de comunicación</p>
+            </div>
+
+            <form id="auth-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Usuario</label>
+                    <div class="relative">
+                        <i data-lucide="user" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
+                        <input type="text" id="username" required class="w-full bg-gray-50 border border-gray-200 text-sm rounded-lg p-3 pl-10 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Nombre de usuario">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Contraseña</label>
+                    <div class="relative">
+                        <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
+                        <input type="password" id="password" required class="w-full bg-gray-50 border border-gray-200 text-sm rounded-lg p-3 pl-10 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
+                    </div>
+                </div>
+                <button type="submit" id="auth-submit" class="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-all">
+                    Iniciar Sesión
+                </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-600">
+                    <span id="auth-toggle-text">¿No tienes cuenta?</span>
+                    <button id="auth-toggle-btn" class="ml-2 text-indigo-600 font-semibold hover:underline">Regístrate aquí</button>
+                </p>
+            </div>
+        </div>
+
+        <!-- Chat Screen (Hidden Initially) -->
+        <div id="chat-screen" class="hidden w-full max-w-6xl h-[100vh] md:h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-row overflow-hidden animate-fade-in">
+            
+            <!-- Sidebar -->
+            <div id="sidebar" class="hidden md:flex flex-col w-64 bg-gray-50 border-r border-gray-100 h-full">
+                <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-white">
+                    <h2 class="font-black text-indigo-600 text-xl tracking-tighter">chatDi4z</h2>
+                </div>
+                <div class="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar" id="users-list">
+                    <p class="px-3 pt-2 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Contactos</p>
+                    <!-- Users list injected here -->
+                </div>
+                <div class="p-4 border-t border-gray-200 bg-gray-50">
+                    <button id="logout-btn" class="w-full flex items-center gap-2 text-red-500 hover:bg-red-50 p-2 rounded-lg font-medium transition-colors">
+                        <i data-lucide="log-out" class="w-4 h-4"></i> Salir
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Chat Area -->
+            <div class="flex-1 flex flex-col h-full bg-white relative">
+                <!-- Header -->
+                <div class="h-16 border-b border-gray-100 flex items-center px-4 md:px-6 justify-between bg-white z-10 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-md">
+                            <i data-lucide="message-square" size="20"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">Sala chatDi4z</h3>
+                            <p class="text-[10px] text-green-500 flex items-center gap-1 font-bold">
+                                <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> CONECTADO
+                            </p>
+                        </div>
+                    </div>
+                    <button id="summarize-btn" class="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold hover:bg-indigo-100 transition-colors">
+                        <i data-lucide="sparkles" size="14"></i>
+                        <span class="hidden sm:inline">Resumen IA</span>
+                    </button>
+                </div>
+
+                <!-- Messages List -->
+                <div id="messages-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-gray-50/30 custom-scrollbar">
+                    <!-- Messages injected here -->
+                </div>
+
+                <!-- Input Area -->
+                <div class="p-4 bg-white border-t border-gray-100">
+                    <form id="chat-form" class="flex items-center gap-2">
+                        <button type="button" id="voice-btn" class="p-3 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 transition-all flex-shrink-0" title="Mantén para grabar">
+                            <i data-lucide="mic" id="mic-icon" class="w-5 h-5"></i>
+                        </button>
+                        
+                        <div class="relative flex-1">
+                            <input type="text" id="chat-input" class="w-full bg-gray-100 border-none rounded-full p-3 px-5 text-sm outline-none focus:ring-2 focus:ring-indigo-100 focus:bg-white pr-10" placeholder="Escribe un mensaje...">
+                            <button type="button" id="fix-btn" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-indigo-500 transition-colors" title="Mejorar con IA">
+                                <i data-lucide="wand2" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        
+                        <button type="submit" class="p-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all active:scale-90 flex-shrink-0">
+                            <i data-lucide="send" class="w-5 h-5"></i>
+                        </button>
+                    </form>
+                    <p id="voice-hint" class="hidden text-[10px] text-red-500 font-bold mt-1 text-center animate-pulse">Grabando... suelta para enviar</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Summary Modal -->
+    <div id="summary-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 p-4 text-white flex justify-between items-center">
+                <h3 class="font-bold flex items-center gap-2"><i data-lucide="sparkles" size="18"></i> Resumen chatDi4z</h3>
+                <button id="close-modal" class="hover:bg-white/20 rounded-full p-1 transition-colors"><i data-lucide="x" size="20"></i></button>
+            </div>
+            <div id="summary-content" class="p-6 text-gray-700 text-sm whitespace-pre-line leading-relaxed">
+                <!-- AI Summary Text -->
+            </div>
+            <div class="p-4 bg-gray-50 border-t border-gray-100">
+                <button id="modal-ok" class="w-full py-2 bg-indigo-600 text-white rounded-lg font-bold">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Configuración y Estado ---
+        const apiKey = ""; // La API Key se inyecta en el entorno de ejecución
+        let currentUser = null;
+        let isRegistering = false;
+        let messages = JSON.parse(localStorage.getItem('chat_messages') || '[]');
+        let users = JSON.parse(localStorage.getItem('chat_users') || '[]');
+        
+        // Grabación
+        let mediaRecorder;
+        let audioChunks = [];
+
+        // --- Utilidades IA ---
+        async function callGemini(prompt) {
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const data = await response.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "Error al generar respuesta.";
+            } catch (error) {
+                console.error("Gemini Error:", error);
+                return "Hubo un problema conectando con la IA.";
+            }
+        }
+
+        // --- Renderizado ---
+        function renderMessages() {
+            const container = document.getElementById('messages-container');
+            container.innerHTML = messages.length === 0 
+                ? `<div class="h-full flex flex-col items-center justify-center text-gray-300"><i data-lucide="message-square" size="48" class="mb-2 opacity-20"></i><p>No hay mensajes todavía</p></div>`
+                : messages.map(msg => {
+                    const isMe = msg.sender === currentUser.username;
+                    return `
+                        <div class="flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fade-in">
+                            <div class="flex max-w-[85%] md:max-w-[70%] ${isMe ? 'flex-row-reverse' : 'flex-row'} items-end gap-2">
+                                <div class="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold shadow-sm mb-1 ${isMe ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border'}">
+                                    ${msg.sender[0].toUpperCase()}
+                                </div>
+                                <div class="py-2 px-4 rounded-2xl shadow-sm text-sm ${isMe ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-white text-gray-800 border border-gray-100 rounded-bl-none'}">
+                                    ${!isMe ? `<p class="text-[9px] font-black text-indigo-500 uppercase mb-1">${msg.sender}</p>` : ''}
+                                    ${msg.type === 'text' 
+                                        ? `<p class="leading-relaxed whitespace-pre-wrap">${msg.text}</p>` 
+                                        : `<audio src="${msg.audio}" controls class="max-w-[200px] h-8 grayscale contrast-125 brightness-110"></audio>`
+                                    }
+                                    <p class="text-[8px] mt-1 text-right opacity-60 font-medium">${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            
+            container.scrollTop = container.scrollHeight;
+            lucide.createIcons();
+        }
+
+        function renderUsers() {
+            const list = document.getElementById('users-list');
+            list.innerHTML = `<p class="px-3 pt-2 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Contactos</p>` + 
+                users.map(u => `
+                    <div class="flex items-center gap-3 p-2 rounded-lg ${u.username === currentUser.username ? 'bg-indigo-50' : ''}">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${u.username === currentUser.username ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600'}">
+                            ${u.username[0].toUpperCase()}
+                        </div>
+                        <span class="text-sm font-medium ${u.username === currentUser.username ? 'text-indigo-900' : 'text-gray-700'}">
+                            ${u.username} ${u.username === currentUser.username ? '(Tú)' : ''}
+                        </span>
+                    </div>
+                `).join('');
+        }
+
+        // --- Lógica de Negocio ---
+        function saveMessage(content, type = 'text') {
+            const newMessage = {
+                id: Date.now(),
+                text: type === 'text' ? content : null,
+                audio: type === 'audio' ? content : null,
+                type,
+                sender: currentUser.username,
+                timestamp: new Date().toISOString()
+            };
+            messages.push(newMessage);
+            localStorage.setItem('chat_messages', JSON.stringify(messages));
+            renderMessages();
+        }
+
+        // --- Event Listeners ---
+        document.getElementById('auth-toggle-btn').onclick = () => {
+            isRegistering = !isRegistering;
+            document.getElementById('auth-submit').innerText = isRegistering ? 'Crear Cuenta' : 'Iniciar Sesión';
+            document.getElementById('auth-subtitle').innerText = isRegistering ? 'Únete a la comunidad de chatDi4z' : 'Tu espacio privado de comunicación';
+            document.getElementById('auth-toggle-text').innerText = isRegistering ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?';
+            document.getElementById('auth-toggle-btn').innerText = isRegistering ? 'Inicia sesión' : 'Regístrate aquí';
+        };
+
+        document.getElementById('auth-form').onsubmit = (e) => {
+            e.preventDefault();
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value.trim();
+            
+            if (isRegistering) {
+                if (users.find(user => user.username === u)) return alert("El usuario ya existe");
+                const newUser = { username: u, password: p };
+                users.push(newUser);
+                localStorage.setItem('chat_users', JSON.stringify(users));
+                currentUser = newUser;
+            } else {
+                const found = users.find(user => user.username === u && user.password === p);
+                if (!found) return alert("Credenciales incorrectas");
+                currentUser = found;
+            }
+
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('chat-screen').classList.remove('hidden');
+            document.body.classList.replace('bg-gradient-to-br', 'bg-gray-100');
+            renderMessages();
+            renderUsers();
+        };
+
+        document.getElementById('chat-form').onsubmit = (e) => {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            if (!input.value.trim()) return;
+            saveMessage(input.value.trim(), 'text');
+            input.value = '';
+        };
+
+        document.getElementById('logout-btn').onclick = () => location.reload();
+
+        // IA: Mejorar Texto
+        document.getElementById('fix-btn').onclick = async () => {
+            const input = document.getElementById('chat-input');
+            if (!input.value.trim()) return;
+            const icon = document.querySelector('#fix-btn i');
+            icon.classList.add('animate-spin');
+            const result = await callGemini(`Reescribe este mensaje para que sea amigable, claro y con buena ortografía en español. Solo devuelve el texto corregido:\n\n"${input.value}"`);
+            input.value = result.replace(/"/g, '').trim();
+            icon.classList.remove('animate-spin');
+        };
+
+        // IA: Resumen
+        document.getElementById('summarize-btn').onclick = async () => {
+            if (messages.length === 0) return;
+            const btn = document.getElementById('summarize-btn');
+            btn.innerHTML = `<div class="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>`;
+            const history = messages.filter(m => m.type === 'text').slice(-15).map(m => `${m.sender}: ${m.text}`).join('\n');
+            const result = await callGemini(`Resume esta conversación de chat en 3 puntos breves usando emojis:\n\n${history}`);
+            
+            document.getElementById('summary-content').innerText = result;
+            document.getElementById('summary-modal').classList.remove('hidden');
+            btn.innerHTML = `<i data-lucide="sparkles" size="14"></i><span class="hidden sm:inline">Resumen IA</span>`;
+            lucide.createIcons();
+        };
+
+        document.getElementById('close-modal').onclick = () => document.getElementById('summary-modal').classList.add('hidden');
+        document.getElementById('modal-ok').onclick = () => document.getElementById('summary-modal').classList.add('hidden');
+
+        // --- Lógica de Voz ---
+        const voiceBtn = document.getElementById('voice-btn');
+        const startVoice = async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const reader = new FileReader();
+                    reader.onloadend = () => saveMessage(reader.result, 'audio');
+                    reader.readAsDataURL(blob);
+                    stream.getTracks().forEach(t => t.stop());
+                };
+                mediaRecorder.start();
+                voiceBtn.classList.replace('bg-gray-100', 'bg-red-500');
+                voiceBtn.classList.replace('text-gray-600', 'text-white');
+                document.getElementById('voice-hint').classList.remove('hidden');
+                document.getElementById('mic-icon').innerHTML = `<path d="M6 6h12v12H6z"/>`; // Square icon
+            } catch (err) { alert("Acceso al micro denegado"); }
+        };
+
+        const stopVoice = () => {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+                voiceBtn.classList.replace('bg-red-500', 'bg-gray-100');
+                voiceBtn.classList.replace('text-white', 'text-gray-600');
+                document.getElementById('voice-hint').classList.add('hidden');
+                document.getElementById('mic-icon').innerHTML = `<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/>`; // Mic icon
+                lucide.createIcons();
+            }
+        };
+
+        voiceBtn.addEventListener('mousedown', startVoice);
+        voiceBtn.addEventListener('mouseup', stopVoice);
+        voiceBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startVoice(); });
+        voiceBtn.addEventListener('touchend', (e) => { e.preventDefault(); stopVoice(); });
+
+        // Inicializar iconos
+        lucide.createIcons();
+
+        // Listen for storage changes from other tabs
+        window.addEventListener('storage', () => {
+            messages = JSON.parse(localStorage.getItem('chat_messages') || '[]');
+            users = JSON.parse(localStorage.getItem('chat_users') || '[]');
+            if (currentUser) {
+                renderMessages();
+                renderUsers();
+            }
+        });
+    </script>
+</body>
+</html>
