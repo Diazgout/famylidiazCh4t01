@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>chatDi4z - Mensajería Privada por ID</title>
+    <title>chatDi4z - Mensajería por Nombre</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -14,16 +14,16 @@
         }
 
         .animate-fade-in {
-            animation: fadeIn 0.3s ease-out;
+            animation: fadeIn 0.2s ease-out;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
+            width: 5px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
             background: transparent;
@@ -33,428 +33,409 @@
             border-radius: 10px;
         }
 
-        .active-chat {
-            background-color: #eef2ff;
+        .active-user-card {
+            background-color: #f0f4ff;
             border-left: 4px solid #4f46e5;
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-indigo-600 to-purple-700 min-h-screen">
+<body class="bg-indigo-50 min-h-screen">
 
     <div id="app" class="flex items-center justify-center min-h-screen p-0 md:p-4">
-        <!-- Auth Screen -->
-        <div id="auth-screen" class="w-full max-w-md p-8 bg-white rounded-2xl shadow-2xl animate-fade-in">
+        
+        <!-- Pantalla de Inicio de Sesión / Registro -->
+        <div id="auth-screen" class="w-full max-w-md p-8 bg-white rounded-3xl shadow-xl animate-fade-in">
             <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600">
-                    <i data-lucide="message-square" size="32"></i>
+                <div class="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white rotate-3 shadow-lg">
+                    <i data-lucide="message-circle" size="32"></i>
                 </div>
                 <h1 class="text-3xl font-black text-gray-800 tracking-tight">chatDi4z</h1>
-                <p id="auth-subtitle" class="text-gray-500 text-sm mt-1">Conecta mediante códigos únicos</p>
+                <p id="auth-subtitle" class="text-gray-500 text-sm mt-1">Busca amigos por su nombre y chatea</p>
             </div>
 
             <form id="auth-form" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Usuario</label>
-                    <div class="relative">
-                        <i data-lucide="user" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
-                        <input type="text" id="username" required class="w-full bg-gray-50 border border-gray-200 text-sm rounded-lg p-3 pl-10 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Nombre de usuario">
-                    </div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Tu nombre de usuario</label>
+                    <input type="text" id="username" required class="w-full bg-gray-50 border border-gray-200 text-sm rounded-xl p-4 outline-none focus:ring-2 focus:ring-indigo-500 transition-all" placeholder="Ej: Juanito123">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Contraseña</label>
-                    <div class="relative">
-                        <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
-                        <input type="password" id="password" required class="w-full bg-gray-50 border border-gray-200 text-sm rounded-lg p-3 pl-10 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
-                    </div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Contraseña</label>
+                    <input type="password" id="password" required class="w-full bg-gray-50 border border-gray-200 text-sm rounded-xl p-4 outline-none focus:ring-2 focus:ring-indigo-500 transition-all" placeholder="••••••••">
                 </div>
-                <button type="submit" id="auth-submit" class="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-all">
-                    Iniciar Sesión
+                <button type="submit" id="auth-submit" class="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg active:scale-[0.98] transition-all">
+                    Entrar al chat
                 </button>
             </form>
 
             <div class="mt-6 text-center">
-                <p class="text-sm text-gray-600">
-                    <span id="auth-toggle-text">¿No tienes cuenta?</span>
-                    <button id="auth-toggle-btn" class="ml-2 text-indigo-600 font-semibold hover:underline">Regístrate aquí</button>
-                </p>
+                <button id="auth-toggle-btn" class="text-indigo-600 text-sm font-semibold hover:underline">¿No tienes cuenta? Regístrate</button>
             </div>
         </div>
 
-        <!-- Chat Screen -->
-        <div id="chat-screen" class="hidden w-full max-w-6xl h-[100vh] md:h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-row overflow-hidden animate-fade-in">
+        <!-- Pantalla Principal del Chat -->
+        <div id="chat-screen" class="hidden w-full max-w-6xl h-[100vh] md:h-[90vh] bg-white rounded-3xl shadow-2xl flex overflow-hidden animate-fade-in">
             
-            <!-- Sidebar -->
-            <div id="sidebar" class="hidden md:flex flex-col w-72 bg-gray-50 border-r border-gray-100 h-full">
-                <div class="p-4 border-b border-gray-200 bg-white">
-                    <h2 class="font-black text-indigo-600 text-xl tracking-tighter mb-4">chatDi4z</h2>
+            <!-- Barra Lateral -->
+            <div class="w-72 bg-gray-50 border-r border-gray-100 flex flex-col hidden md:flex">
+                <div class="p-6 border-b border-gray-100 bg-white">
+                    <h2 class="font-black text-indigo-600 text-2xl tracking-tighter mb-4">chatDi4z</h2>
                     
-                    <!-- Search/Add Friend -->
-                    <div class="relative">
-                        <input type="text" id="friend-search" class="w-full bg-gray-100 border-none rounded-lg p-2 pl-8 text-xs outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Añadir por código (PE-...)">
-                        <i data-lucide="user-plus" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5"></i>
-                        <button id="add-friend-btn" class="absolute right-1 top-1/2 -translate-y-1/2 bg-indigo-600 text-white p-1 rounded-md hover:bg-indigo-700">
+                    <!-- Buscador de Usuarios -->
+                    <div class="relative group">
+                        <input type="text" id="user-search-input" class="w-full bg-gray-100 border-none rounded-xl p-3 pl-10 text-xs outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Buscar usuario...">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
+                        <button id="add-user-btn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-indigo-600 text-white p-1.5 rounded-lg hover:bg-indigo-700 transition-colors">
                             <i data-lucide="plus" class="w-3 h-3"></i>
                         </button>
                     </div>
                 </div>
 
-                <div class="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar" id="friends-list">
-                    <p class="px-3 pt-2 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Mis Contactos</p>
-                    <!-- Friends list injected here -->
+                <div class="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar" id="contacts-list">
+                    <!-- Lista de chats inyectada aquí -->
                 </div>
 
-                <div class="p-4 border-t border-gray-200 bg-white">
-                    <div class="flex items-center gap-3 mb-4 p-2 bg-indigo-50 rounded-lg">
-                        <div id="my-avatar" class="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xs uppercase">?</div>
-                        <div class="overflow-hidden">
-                            <p id="my-name" class="text-xs font-bold text-gray-800 truncate">Usuario</p>
-                            <p id="my-id-display" class="text-[10px] text-indigo-600 font-mono tracking-tighter">PE-0000</p>
+                <div class="p-4 border-t border-gray-100 bg-white">
+                    <div class="flex items-center gap-3 p-2">
+                        <div id="my-avatar" class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black">?</div>
+                        <div class="flex-1 overflow-hidden">
+                            <p id="my-name-display" class="text-sm font-bold text-gray-800 truncate">Usuario</p>
+                            <p class="text-[10px] text-green-500 font-bold uppercase tracking-widest">En línea</p>
                         </div>
+                        <button id="logout-btn" class="text-gray-400 hover:text-red-500 transition-colors">
+                            <i data-lucide="log-out" class="w-5 h-5"></i>
+                        </button>
                     </div>
-                    <button id="logout-btn" class="w-full flex items-center gap-2 text-red-500 hover:bg-red-50 p-2 rounded-lg font-medium transition-colors text-sm">
-                        <i data-lucide="log-out" class="w-4 h-4"></i> Cerrar Sesión
-                    </button>
                 </div>
             </div>
 
-            <!-- Main Chat Area -->
-            <div class="flex-1 flex flex-col h-full bg-white relative">
-                <!-- Header -->
-                <div id="chat-header" class="h-16 border-b border-gray-100 flex items-center px-4 md:px-6 justify-between bg-white z-10 shadow-sm">
-                    <div class="flex items-center gap-3">
-                        <div id="active-avatar" class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 shadow-sm">
-                            <i data-lucide="user" size="20"></i>
+            <!-- Área de Mensajes -->
+            <div class="flex-1 flex flex-col bg-white">
+                <!-- Header del Chat -->
+                <div id="chat-header" class="h-20 border-b border-gray-50 flex items-center px-6 justify-between">
+                    <div class="flex items-center gap-4">
+                        <div id="header-avatar" class="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400">
+                            <i data-lucide="user" size="24"></i>
                         </div>
                         <div>
-                            <h3 id="active-chat-name" class="font-bold text-gray-800 leading-tight">Selecciona un chat</h3>
-                            <p id="active-chat-status" class="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Sin conversación activa</p>
+                            <h3 id="header-name" class="font-bold text-gray-800 text-lg leading-none mb-1">Inicia un chat</h3>
+                            <p id="header-status" class="text-xs text-gray-400">Busca a alguien en la barra lateral</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button id="summarize-btn" class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold hover:bg-indigo-100 transition-colors">
-                            <i data-lucide="sparkles" size="14"></i>
-                            <span>Resumen</span>
+                    <div id="header-actions" class="hidden">
+                        <button id="summarize-btn" class="p-2 text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors" title="Resumir chat">
+                            <i data-lucide="sparkles" class="w-5 h-5"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- Messages List -->
-                <div id="messages-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-gray-50/30 custom-scrollbar">
+                <!-- Contenedor de Mensajes -->
+                <div id="messages-area" class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/50 custom-scrollbar">
                     <div class="h-full flex flex-col items-center justify-center text-gray-300">
-                        <i data-lucide="message-square" size="48" class="mb-2 opacity-20"></i>
-                        <p>Añade a alguien por su código para chatear</p>
+                        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                            <i data-lucide="message-square" size="40"></i>
+                        </div>
+                        <p class="font-medium text-sm text-center px-10">Busca el nombre exacto de un usuario registrado y agrégalo para chatear en privado.</p>
                     </div>
                 </div>
 
-                <!-- Input Area -->
-                <div id="input-area" class="hidden p-4 bg-white border-t border-gray-100">
-                    <form id="chat-form" class="flex items-center gap-2">
-                        <button type="button" id="voice-btn" class="p-3 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 transition-all flex-shrink-0" title="Mantén para grabar">
-                            <i data-lucide="mic" id="mic-icon" class="w-5 h-5"></i>
+                <!-- Input de Mensaje -->
+                <div id="input-container" class="hidden p-6 bg-white border-t border-gray-50">
+                    <form id="message-form" class="flex items-center gap-3">
+                        <button type="button" id="voice-btn" class="p-4 bg-gray-100 text-gray-500 rounded-2xl hover:bg-gray-200 transition-all flex-shrink-0">
+                            <i data-lucide="mic" id="mic-icon" class="w-6 h-6"></i>
                         </button>
                         
-                        <div class="relative flex-1">
-                            <input type="text" id="chat-input" class="w-full bg-gray-100 border-none rounded-full p-3 px-5 text-sm outline-none focus:ring-2 focus:ring-indigo-100 focus:bg-white pr-10" placeholder="Escribe un mensaje...">
-                            <button type="button" id="fix-btn" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-indigo-500 transition-colors" title="Mejorar con IA">
-                                <i data-lucide="wand2" class="w-5 h-5"></i>
+                        <div class="flex-1 relative">
+                            <input type="text" id="message-input" class="w-full bg-gray-100 border-none rounded-2xl p-4 text-sm outline-none focus:ring-2 focus:ring-indigo-100 focus:bg-white" placeholder="Escribe algo aquí...">
+                            <button type="button" id="magic-fix-btn" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-indigo-500">
+                                <i data-lucide="wand-2" class="w-5 h-5"></i>
                             </button>
                         </div>
                         
-                        <button type="submit" class="p-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all active:scale-90 flex-shrink-0">
-                            <i data-lucide="send" class="w-5 h-5"></i>
+                        <button type="submit" class="p-4 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 shadow-lg shadow-indigo-100 active:scale-95 transition-all">
+                            <i data-lucide="send" class="w-6 h-6"></i>
                         </button>
                     </form>
-                    <p id="voice-hint" class="hidden text-[10px] text-red-500 font-bold mt-1 text-center animate-pulse">Grabando... suelta para enviar</p>
+                    <div id="recording-status" class="hidden mt-2 text-center text-red-500 text-[10px] font-black uppercase tracking-widest animate-pulse">Grabando audio...</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- AI Summary Modal -->
-    <div id="summary-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
-            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 p-4 text-white flex justify-between items-center">
-                <h3 class="font-bold flex items-center gap-2"><i data-lucide="sparkles" size="18"></i> Resumen de IA</h3>
-                <button id="close-modal" class="hover:bg-white/20 rounded-full p-1 transition-colors"><i data-lucide="x" size="20"></i></button>
+    <!-- Modal Resumen IA -->
+    <div id="ai-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in">
+            <div class="p-6 bg-indigo-600 text-white flex justify-between items-center">
+                <h3 class="font-bold flex items-center gap-2"><i data-lucide="sparkles" size="18"></i> Resumen Mágico</h3>
+                <button onclick="closeModal()" class="hover:bg-white/20 p-1 rounded-lg transition-colors"><i data-lucide="x" size="20"></i></button>
             </div>
-            <div id="summary-content" class="p-6 text-gray-700 text-sm whitespace-pre-line leading-relaxed"></div>
-            <div class="p-4 bg-gray-50 border-t border-gray-100">
-                <button id="modal-ok" class="w-full py-2 bg-indigo-600 text-white rounded-lg font-bold">Cerrar</button>
+            <div id="ai-modal-body" class="p-8 text-gray-700 text-sm leading-relaxed"></div>
+            <div class="p-6 border-t border-gray-50">
+                <button onclick="closeModal()" class="w-full py-3 bg-gray-100 text-gray-600 rounded-xl font-bold">Cerrar</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- Configuración y Estado ---
-        const apiKey = ""; 
+        const apiKey = "";
         let currentUser = null;
-        let activeRecipientId = null;
-        let isRegistering = false;
-        
-        let messages = JSON.parse(localStorage.getItem('chat_messages_v2') || '[]');
-        let users = JSON.parse(localStorage.getItem('chat_users_v2') || '[]');
-        
+        let activeFriendName = null;
+        let isRegisteringMode = false;
+
+        // Persistencia
+        let allUsers = JSON.parse(localStorage.getItem('chatd4_users') || '[]');
+        let allMessages = JSON.parse(localStorage.getItem('chatd4_messages') || '[]');
+
         // Grabación
-        let mediaRecorder;
-        let audioChunks = [];
+        let recorder;
+        let chunks = [];
 
-        // --- Utilidades ---
-        function generateUID() {
-            return 'PE-' + Math.floor(1000 + Math.random() * 9000);
-        }
-
-        async function callGemini(prompt) {
+        // --- FUNCIONES IA ---
+        async function askGemini(prompt) {
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
-                const data = await response.json();
-                return data.candidates?.[0]?.content?.parts?.[0]?.text || "Error al procesar.";
-            } catch (error) { return "Error de conexión."; }
+                const d = await res.json();
+                return d.candidates?.[0]?.content?.parts?.[0]?.text || "No pude procesar eso.";
+            } catch (e) { return "Error de conexión con la IA."; }
         }
 
-        // --- Renderizado ---
-        function renderMessages() {
-            const container = document.getElementById('messages-container');
-            if (!activeRecipientId) return;
+        // --- RENDERIZADO ---
+        function updateContactsList() {
+            const list = document.getElementById('contacts-list');
+            const myFriends = currentUser.friends || [];
 
-            // Filtrar mensajes entre el usuario actual y el receptor activo
-            const filteredMessages = messages.filter(m => 
-                (m.senderId === currentUser.id && m.recipientId === activeRecipientId) ||
-                (m.senderId === activeRecipientId && m.recipientId === currentUser.id)
-            );
-
-            container.innerHTML = filteredMessages.length === 0 
-                ? `<div class="h-full flex flex-col items-center justify-center text-gray-300 opacity-50"><p>No hay mensajes aquí aún. ¡Saluda!</p></div>`
-                : filteredMessages.map(msg => {
-                    const isMe = msg.senderId === currentUser.id;
-                    return `
-                        <div class="flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fade-in">
-                            <div class="flex max-w-[85%] md:max-w-[70%] ${isMe ? 'flex-row-reverse' : 'flex-row'} items-end gap-2">
-                                <div class="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold shadow-sm mb-1 ${isMe ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border'}">
-                                    ${msg.senderName[0].toUpperCase()}
-                                </div>
-                                <div class="py-2 px-4 rounded-2xl shadow-sm text-sm ${isMe ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-white text-gray-800 border border-gray-100 rounded-bl-none'}">
-                                    ${msg.type === 'text' 
-                                        ? `<p class="leading-relaxed whitespace-pre-wrap">${msg.text}</p>` 
-                                        : `<audio src="${msg.audio}" controls class="max-w-[180px] h-8 grayscale brightness-110"></audio>`
-                                    }
-                                    <p class="text-[8px] mt-1 text-right opacity-60 font-medium">${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            
-            container.scrollTop = container.scrollHeight;
-            lucide.createIcons();
-        }
-
-        function renderFriends() {
-            const list = document.getElementById('friends-list');
-            const myFriendsIds = currentUser.friends || [];
-            
-            if (myFriendsIds.length === 0) {
-                list.innerHTML = `<p class="px-3 pt-2 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center mt-4">Sin amigos aún</p>`;
+            if (myFriends.length === 0) {
+                list.innerHTML = `<p class="text-center text-gray-400 text-[10px] mt-10 font-bold uppercase tracking-widest">No tienes contactos</p>`;
                 return;
             }
 
-            list.innerHTML = `<p class="px-3 pt-2 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Mis Contactos</p>` + 
-                myFriendsIds.map(fid => {
-                    const fData = users.find(u => u.id === fid);
-                    if (!fData) return '';
-                    const isActive = fid === activeRecipientId;
-                    return `
-                        <div onclick="setActiveChat('${fid}')" class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${isActive ? 'active-chat' : 'hover:bg-gray-100'}">
-                            <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-white border border-gray-200 text-indigo-600 shadow-sm">
-                                ${fData.username[0].toUpperCase()}
-                            </div>
-                            <div class="flex-1 overflow-hidden">
-                                <p class="text-sm font-bold text-gray-800 truncate">${fData.username}</p>
-                                <p class="text-[9px] text-gray-400 font-mono">${fData.id}</p>
-                            </div>
-                            ${isActive ? '<div class="w-1.5 h-1.5 bg-indigo-600 rounded-full"></div>' : ''}
+            list.innerHTML = myFriends.map(fName => {
+                const isActive = fName === activeFriendName;
+                return `
+                    <div onclick="openChat('${fName}')" class="flex items-center gap-3 p-4 rounded-2xl cursor-pointer transition-all ${isActive ? 'active-user-card shadow-sm' : 'hover:bg-white'}">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white border border-gray-100 text-indigo-600 font-bold shadow-sm">
+                            ${fName[0].toUpperCase()}
                         </div>
-                    `;
-                }).join('');
+                        <div class="flex-1 overflow-hidden">
+                            <p class="text-sm font-bold text-gray-800 truncate">${fName}</p>
+                            <p class="text-[10px] text-gray-400 truncate">Pulsa para chatear</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        function setActiveChat(friendId) {
-            const friend = users.find(u => u.id === friendId);
-            if (!friend) return;
-            activeRecipientId = friendId;
+        function renderMessages() {
+            const area = document.getElementById('messages-area');
+            if (!activeFriendName) return;
+
+            const conversation = allMessages.filter(m => 
+                (m.from === currentUser.username && m.to === activeFriendName) ||
+                (m.from === activeFriendName && m.to === currentUser.username)
+            );
+
+            if (conversation.length === 0) {
+                area.innerHTML = `<div class="h-full flex flex-col items-center justify-center opacity-40"><p class="text-sm font-medium">Di hola a ${activeFriendName}</p></div>`;
+                return;
+            }
+
+            area.innerHTML = conversation.map(m => {
+                const isMe = m.from === currentUser.username;
+                return `
+                    <div class="flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fade-in">
+                        <div class="max-w-[80%] ${isMe ? 'bg-indigo-600 text-white rounded-2xl rounded-tr-none shadow-indigo-100' : 'bg-white text-gray-800 rounded-2xl rounded-tl-none border border-gray-100'} p-4 shadow-sm">
+                            ${m.type === 'text' 
+                                ? `<p class="text-sm leading-relaxed">${m.content}</p>` 
+                                : `<audio src="${m.content}" controls class="h-8 w-40 grayscale brightness-125"></audio>`
+                            }
+                            <span class="text-[8px] block mt-1 opacity-50 text-right font-bold">${new Date(m.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            area.scrollTop = area.scrollHeight;
+        }
+
+        function openChat(name) {
+            activeFriendName = name;
+            document.getElementById('header-name').innerText = name;
+            document.getElementById('header-status').innerText = "Conversación privada";
+            document.getElementById('header-avatar').innerHTML = `<span class="font-black text-indigo-600">${name[0].toUpperCase()}</span>`;
+            document.getElementById('header-avatar').classList.replace('bg-gray-100', 'bg-indigo-50');
+            document.getElementById('header-actions').classList.remove('hidden');
+            document.getElementById('input-container').classList.remove('hidden');
             
-            document.getElementById('active-chat-name').innerText = friend.username;
-            document.getElementById('active-chat-status').innerText = 'Chat Privado • ' + friend.id;
-            document.getElementById('active-chat-status').classList.replace('text-gray-400', 'text-green-500');
-            document.getElementById('active-avatar').innerHTML = `<span class="font-bold text-indigo-600 uppercase">${friend.username[0]}</span>`;
-            document.getElementById('active-avatar').classList.replace('bg-gray-200', 'bg-indigo-50');
-            
-            document.getElementById('input-area').classList.remove('hidden');
-            document.getElementById('summarize-btn').classList.remove('hidden');
-            
-            renderFriends();
+            updateContactsList();
             renderMessages();
+            lucide.createIcons();
         }
 
-        // --- Lógica de Negocio ---
-        function saveMessage(content, type = 'text') {
-            if (!activeRecipientId) return;
-            const newMessage = {
-                id: Date.now(),
-                text: type === 'text' ? content : null,
-                audio: type === 'audio' ? content : null,
-                type,
-                senderId: currentUser.id,
-                senderName: currentUser.username,
-                recipientId: activeRecipientId,
-                timestamp: new Date().toISOString()
-            };
-            messages.push(newMessage);
-            localStorage.setItem('chat_messages_v2', JSON.stringify(messages));
-            renderMessages();
-        }
-
-        // --- Event Listeners ---
+        // --- EVENTOS ---
         document.getElementById('auth-toggle-btn').onclick = () => {
-            isRegistering = !isRegistering;
-            document.getElementById('auth-submit').innerText = isRegistering ? 'Crear Cuenta' : 'Iniciar Sesión';
-            document.getElementById('auth-toggle-text').innerText = isRegistering ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?';
-            document.getElementById('auth-toggle-btn').innerText = isRegistering ? 'Inicia sesión' : 'Regístrate aquí';
+            isRegisteringMode = !isRegisteringMode;
+            document.getElementById('auth-submit').innerText = isRegisteringMode ? 'Crear mi cuenta' : 'Entrar al chat';
+            document.getElementById('auth-toggle-btn').innerText = isRegisteringMode ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate';
         };
 
         document.getElementById('auth-form').onsubmit = (e) => {
             e.preventDefault();
             const u = document.getElementById('username').value.trim();
             const p = document.getElementById('password').value.trim();
-            
-            if (isRegistering) {
-                if (users.find(user => user.username === u)) return alert("El nombre ya existe");
-                const newUser = { 
-                    id: generateUID(), 
-                    username: u, 
-                    password: p, 
-                    friends: [] 
-                };
-                users.push(newUser);
-                localStorage.setItem('chat_users_v2', JSON.stringify(users));
-                currentUser = newUser;
+
+            if (isRegisteringMode) {
+                if (allUsers.find(x => x.username.toLowerCase() === u.toLowerCase())) return alert("Ese nombre ya existe.");
+                currentUser = { username: u, password: p, friends: [] };
+                allUsers.push(currentUser);
+                localStorage.setItem('chatd4_users', JSON.stringify(allUsers));
             } else {
-                const found = users.find(user => user.username === u && user.password === p);
-                if (!found) return alert("Credenciales incorrectas");
+                const found = allUsers.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
+                if (!found) return alert("Usuario o contraseña incorrectos.");
                 currentUser = found;
             }
 
-            // UI Setup
             document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('chat-screen').classList.remove('hidden');
-            document.body.classList.replace('bg-gradient-to-br', 'bg-gray-100');
+            document.getElementById('my-name-display').innerText = currentUser.username;
+            document.getElementById('my-avatar').innerText = currentUser.username[0].toUpperCase();
             
-            document.getElementById('my-avatar').innerText = currentUser.username[0];
-            document.getElementById('my-name').innerText = currentUser.username;
-            document.getElementById('my-id-display').innerText = currentUser.id;
-            
-            renderFriends();
+            updateContactsList();
             lucide.createIcons();
         };
 
-        // Añadir Amigo por Código
-        document.getElementById('add-friend-btn').onclick = () => {
-            const codeInput = document.getElementById('friend-search');
-            const code = codeInput.value.trim().toUpperCase();
-            
-            if (code === currentUser.id) return alert("No puedes agregarte a ti mismo");
-            if (currentUser.friends?.includes(code)) return alert("Ya tienes a este contacto");
+        // Buscar y agregar por NOMBRE
+        document.getElementById('add-user-btn').onclick = () => {
+            const searchInput = document.getElementById('user-search-input');
+            const nameToFind = searchInput.value.trim();
 
-            const friend = users.find(u => u.id === code);
-            if (friend) {
-                if (!currentUser.friends) currentUser.friends = [];
-                currentUser.friends.push(friend.id);
-                
-                // Actualizar en base de datos local
-                const userIdx = users.findIndex(u => u.id === currentUser.id);
-                users[userIdx] = currentUser;
-                localStorage.setItem('chat_users_v2', JSON.stringify(users));
-                
-                alert(`¡${friend.username} añadido!`);
-                codeInput.value = '';
-                renderFriends();
+            if (!nameToFind) return;
+            if (nameToFind.toLowerCase() === currentUser.username.toLowerCase()) return alert("No puedes chatear contigo mismo.");
+            
+            const target = allUsers.find(x => x.username.toLowerCase() === nameToFind.toLowerCase());
+            
+            if (target) {
+                if (!currentUser.friends.includes(target.username)) {
+                    currentUser.friends.push(target.username);
+                    // Actualizar en el storage
+                    const idx = allUsers.findIndex(x => x.username === currentUser.username);
+                    allUsers[idx] = currentUser;
+                    localStorage.setItem('chatd4_users', JSON.stringify(allUsers));
+                    
+                    alert(`¡${target.username} añadido!`);
+                    updateContactsList();
+                } else {
+                    alert("Ya tienes a este usuario.");
+                }
+                openChat(target.username);
+                searchInput.value = '';
             } else {
-                alert("Código no encontrado. Debe ser ej: PE-1234");
+                alert("Usuario no encontrado. Asegúrate de escribir el nombre exacto.");
             }
         };
 
-        document.getElementById('chat-form').onsubmit = (e) => {
+        document.getElementById('message-form').onsubmit = (e) => {
             e.preventDefault();
-            const input = document.getElementById('chat-input');
-            if (!input.value.trim()) return;
-            saveMessage(input.value.trim(), 'text');
+            const input = document.getElementById('message-input');
+            if (!input.value.trim() || !activeFriendName) return;
+
+            const msg = {
+                from: currentUser.username,
+                to: activeFriendName,
+                content: input.value.trim(),
+                type: 'text',
+                time: new Date().toISOString()
+            };
+
+            allMessages.push(msg);
+            localStorage.setItem('chatd4_messages', JSON.stringify(allMessages));
             input.value = '';
+            renderMessages();
         };
 
-        // IA y Otros
-        document.getElementById('fix-btn').onclick = async () => {
-            const input = document.getElementById('chat-input');
+        // IA - Corregir Magicamente
+        document.getElementById('magic-fix-btn').onclick = async () => {
+            const input = document.getElementById('message-input');
             if (!input.value.trim()) return;
-            const icon = document.querySelector('#fix-btn i');
-            icon.classList.add('animate-spin');
-            const result = await callGemini(`Mejora este mensaje de chat en español:\n\n"${input.value}"`);
-            input.value = result.replace(/"/g, '').trim();
-            icon.classList.remove('animate-spin');
+            
+            const btn = document.getElementById('magic-fix-btn');
+            btn.classList.add('animate-spin', 'text-indigo-600');
+            
+            const fixed = await askGemini(`Mejora este mensaje para un chat, hazlo sonar bien y corrige ortografía. Solo devuelve el texto mejorado:\n"${input.value}"`);
+            input.value = fixed.replace(/"/g, '').trim();
+            
+            btn.classList.remove('animate-spin', 'text-indigo-600');
         };
 
+        // IA - Resumir
         document.getElementById('summarize-btn').onclick = async () => {
-            const history = messages
-                .filter(m => (m.senderId === currentUser.id && m.recipientId === activeRecipientId) || (m.senderId === activeRecipientId && m.recipientId === currentUser.id))
+            const chatLog = allMessages
+                .filter(m => (m.from === currentUser.username && m.to === activeFriendName) || (m.from === activeFriendName && m.to === currentUser.username))
                 .filter(m => m.type === 'text')
                 .slice(-10)
-                .map(m => `${m.senderName}: ${m.text}`).join('\n');
-            
-            if (!history) return;
-            const result = await callGemini(`Resume brevemente esta conversación:\n\n${history}`);
-            document.getElementById('summary-content').innerText = result;
-            document.getElementById('summary-modal').classList.remove('hidden');
+                .map(m => `${m.from}: ${m.content}`)
+                .join('\n');
+
+            if (!chatLog) return alert("No hay suficientes mensajes para resumir.");
+
+            const summary = await askGemini(`Resume esta conversación de chat entre dos personas de forma amigable y corta:\n${chatLog}`);
+            document.getElementById('ai-modal-body').innerText = summary;
+            document.getElementById('ai-modal').classList.remove('hidden');
         };
 
-        document.getElementById('close-modal').onclick = () => document.getElementById('summary-modal').classList.add('hidden');
-        document.getElementById('modal-ok').onclick = () => document.getElementById('summary-modal').classList.add('hidden');
-        document.getElementById('logout-btn').onclick = () => location.reload();
+        function closeModal() {
+            document.getElementById('ai-modal').classList.add('hidden');
+        }
 
-        // --- Lógica de Voz ---
-        const voiceBtn = document.getElementById('voice-btn');
-        const startVoice = async () => {
+        // --- AUDIO ---
+        const vBtn = document.getElementById('voice-btn');
+        async function startRecording() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
-                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                recorder = new MediaRecorder(stream);
+                chunks = [];
+                recorder.ondataavailable = e => chunks.push(e.data);
+                recorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: 'audio/webm' });
                     const reader = new FileReader();
-                    reader.onloadend = () => saveMessage(reader.result, 'audio');
+                    reader.onloadend = () => {
+                        allMessages.push({
+                            from: currentUser.username,
+                            to: activeFriendName,
+                            content: reader.result,
+                            type: 'audio',
+                            time: new Date().toISOString()
+                        });
+                        localStorage.setItem('chatd4_messages', JSON.stringify(allMessages));
+                        renderMessages();
+                    };
                     reader.readAsDataURL(blob);
                     stream.getTracks().forEach(t => t.stop());
                 };
-                mediaRecorder.start();
-                voiceBtn.className = "p-3 bg-red-500 text-white rounded-full transition-all animate-pulse";
-                document.getElementById('voice-hint').classList.remove('hidden');
-            } catch (err) { alert("Sin acceso al micro"); }
-        };
+                recorder.start();
+                vBtn.classList.replace('bg-gray-100', 'bg-red-500');
+                vBtn.classList.replace('text-gray-500', 'text-white');
+                document.getElementById('recording-status').classList.remove('hidden');
+            } catch (err) { alert("Error al acceder al micrófono."); }
+        }
 
-        const stopVoice = () => {
-            if (mediaRecorder && mediaRecorder.state === "recording") {
-                mediaRecorder.stop();
-                voiceBtn.className = "p-3 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 transition-all";
-                document.getElementById('voice-hint').classList.add('hidden');
+        function stopRecording() {
+            if (recorder && recorder.state === "recording") {
+                recorder.stop();
+                vBtn.classList.replace('bg-red-500', 'bg-gray-100');
+                vBtn.classList.replace('text-white', 'text-gray-500');
+                document.getElementById('recording-status').classList.add('hidden');
             }
-        };
+        }
 
-        voiceBtn.onmousedown = startVoice;
-        voiceBtn.onmouseup = stopVoice;
-        voiceBtn.ontouchstart = (e) => { e.preventDefault(); startVoice(); };
-        voiceBtn.ontouchend = (e) => { e.preventDefault(); stopVoice(); };
+        vBtn.onmousedown = startRecording;
+        vBtn.onmouseup = stopRecording;
+        vBtn.ontouchstart = (e) => { e.preventDefault(); startRecording(); };
+        vBtn.ontouchend = (e) => { e.preventDefault(); stopRecording(); };
+
+        document.getElementById('logout-btn').onclick = () => location.reload();
 
         lucide.createIcons();
     </script>
